@@ -13,7 +13,7 @@ body{
 .container-player{
 	padding: 10px;
 	position: absolute;
-	width: 35%;
+	width: 60%;
 	display: flex;
 }
 .container-bar{
@@ -26,9 +26,55 @@ body{
 .player-health{
 	background-color: yellow;
 	height: 30px;
-	width: 100%;
-	margin-bottom: 5px;
+	margin-bottom: 10px;
 	max-width: 300px;
+	position: relative;
+	width: 100%;
+}
+
+.contenedor-enemyHealth{
+	position: relative;
+	height: 30px;
+	width: 100%;
+}
+
+.contenedor-playerHealth{
+	position: relative;
+	display: flex;
+	justify-content: flex-end;
+	width: 100%;
+}
+
+.enemy-health{
+	background-color: orange;
+	height: 30px;
+	margin-bottom: 5px;
+	margin: 10px;
+	max-width: 300px;
+}
+
+.enemyAbsolute{
+	margin: 10px;
+	margin-bottom: 5px;
+	height: 30px;
+	max-width: 300px;
+	position: absolute;
+	background: blue;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
+}
+
+.playerAbsolute{
+	height: 30px;
+	max-width: 300px;
+	width: 100%;
+	position: absolute;
+	background: green;
+	top: 0;
+	right: 0;
+	bottom: 0;
 }
 
 .player-mana{
@@ -42,5 +88,9 @@ body{
 	background-color: red;
 	width: 100px;
 	height: 100px; 
+	display: flex;
+	justify-content: center;
 	flex-shrink: 0;
+	margin-left: 10%;
+	align-items: center;
 }
