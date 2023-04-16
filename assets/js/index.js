@@ -36,6 +36,7 @@ class Sprite{
 		}
 		this.color = color;
 		this.isAttacking;
+		this.health = 100;
 
 	}
 
@@ -141,6 +142,34 @@ function rectangularCollision({ rectangle1, rectangle2}){
 		)
 }
 
+function determineDeath({player, enemy, timerId}){
+	clearTimeout(timerId);
+	document.querySelector('#display-text').style.display = 'flex';
+	if (player.health <= 0) {
+		document.querySelector('#display-text').innerHTML = 'Game Over';
+	}else if(enemy.health <= 0 && player.health > 0){
+		document.querySelector('#display-text').innerHTML = 'Adventure Continue';
+	}
+
+}
+
+let timer = 30;
+let  timerId;
+function decreaseTimer(){
+	if (timer > 0 ) {
+		timerId = setTimeout(decreaseTimer, 1000);
+		timer--;
+		document.querySelector('#timer').innerHTML = timer;
+	}
+	if (timer === 0) {
+		determineDeath({player, enemy, timerId});
+	}
+
+}
+
+
+decreaseTimer();
+
 //Esta función lo que hace es dibujar en nuestro liezo varios cuadros por segundo
 //Se mantiene activo todo el tiempo
 function animate(){
@@ -178,7 +207,8 @@ function animate(){
 		player.isAttacking
 		) {
 		player.isAttacking = false;
-		console.log("Ataque");
+		enemy.health -= 20;
+		document.querySelector('#enemyHealth').style.width = enemy.health + "%";
 	}
 
 	if (
@@ -189,7 +219,13 @@ function animate(){
 		enemy.isAttacking
 		) {
 		enemy.isAttacking = false;
-		console.log("Daño");
+		player.health -= 20;
+		document.querySelector('#playerHealth').style.width = player.health + "%";
+	}
+
+	//Terminar el juego basado en la vida
+	if (player.health <= 0 || enemy.health <= 0) {
+		determineDeath({player, enemy, timerId});
 	}
 
 }
@@ -237,6 +273,7 @@ window.addEventListener('keydown', (event) =>{
 			enemy.isAttacking = true;
 		break;
 	}
+	//console.log(event.key);
 });
 
 //Este es el contrario de la dirección a donde establecimos que vaya el personje
