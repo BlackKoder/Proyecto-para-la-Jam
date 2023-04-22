@@ -6,9 +6,34 @@ const c = canvas.getContext('2d');
 canvas.width = 1024;
 canvas.height = 576;
 
+//Aquí escalamos los valores del lienzo dividiendo entre cuatro veces su tamaño, este debe de 
+//concordar con el valor de scale que usamos más abajo
+const scaledCanvas = {
+	width: canvas.width / 4,
+	height: canvas.height / 4
+}
+
 //Este va a ser el valor para la gravedad
 const gravity = 0.5;
 
+
+//Esta clase es para el background
+class Background{
+	constructor({position, imageSrc}){
+		this.position = position;
+		this.image = new Image();
+		this.image.src = imageSrc;
+	}
+
+	draw(){
+		if (!this.image) return;
+		c.drawImage(this.image, this.position.y, this.position.x); 
+	}
+
+	update(){
+		this.draw();
+	}
+}
 
 //Esta clase es para el jugador, aquí está la posición velocidad etc.
 //NOTA: Si no puedo pasar las propiedades del constructor como un objetos, es porque
@@ -73,6 +98,8 @@ class Sprite{
 		}
 	}
 
+	//Esto lo que hace es que los ataques se restablezcan a su valor original
+	//Para que sea como un golpe que se está dando
 	attack(){
 		this.isAttacking = true;
 		setTimeout(() => {
@@ -98,6 +125,8 @@ const player = new Sprite({
 			}
 			
 		});
+
+//Este es el objeto del enemigo
 const enemy = new Sprite({
 			position:{
 				x: 300,
@@ -131,6 +160,16 @@ const keys = {
 	}
 }
 
+//Este es el objeto donde cambiamos los valores de nuestro background
+const background = new Background({
+	position:{
+		x: 0,
+		y: 0,
+	},
+	imageSrc: './assets/img/background.png'
+})
+
+//Con esto detectamos las colisiones al dar un golpe
 function rectangularCollision({ rectangle1, rectangle2}){
 	return(rectangle1.attackBox.position.x  + rectangle1.attackBox.width >=
 				rectangle2.position.x && 
@@ -142,6 +181,7 @@ function rectangularCollision({ rectangle1, rectangle2}){
 		)
 }
 
+//Aquí determinamos el Game Over o si sigue nuestra aventura
 function determineDeath({player, enemy, timerId}){
 	clearTimeout(timerId);
 	document.querySelector('#display-text').style.display = 'flex';
@@ -153,6 +193,7 @@ function determineDeath({player, enemy, timerId}){
 
 }
 
+//Con esto hacemos el contador del tiempo de la partida
 let timer = 30;
 let  timerId;
 function decreaseTimer(){
@@ -176,6 +217,16 @@ function animate(){
 	window.requestAnimationFrame(animate);
 	c.fillStyle = "white";
 	c.fillRect(0, 0, canvas.width, canvas.height);
+
+	//Con este guardamos los valores que están dentro de él
+	c.save();
+	//Con este manejamos el escalado del background
+	c.scale(4, 4);
+	//Con este hacemos la transición de la vista del background
+	c.translate(0, -background.image.height + scaledCanvas.height);
+	background.update();
+	//Con este restaura los valores para mostrarnoslo constantemente en pantalla
+	c.restore();
 	player.update();
 	enemy.update();
 
