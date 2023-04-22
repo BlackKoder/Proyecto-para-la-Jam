@@ -13,101 +13,54 @@ const scaledCanvas = {
 	height: canvas.height / 4
 }
 
+//Este bucle encierra un arreglo y toma 36 elementos del arreglo que nos da tiled de nuestro
+//tilemap
+const floorCollisions2D = [];
+for(let i = 0; i < floorCollisions.length; i += 36){
+	floorCollisions2D.push(floorCollisions.slice(i, i + 36));
+}
+
+//Esto lo que hace es crear los bloques que hemos hecho en tiled de nuestro tilemap
+//202 es el símbolo que nos ididca que ahí hay un collider (16 hace referencia al ancho y alto)
+const collisionBlocks = [];
+floorCollisions2D.forEach((row, y) => {
+	row.forEach((symbol, x) => {
+		if (symbol === 202) {
+			collisionBlocks.push(
+				new CollisionBlock({
+					position:{
+						x: x * 16,
+						y: y * 16,
+					},
+			}))
+		}
+	})
+})
+
+//Esto hace lo mismo de hacer el arreglo
+const platformCollisions2D = [];
+for(let i = 0; i < platformCollisions.length; i += 36){
+	platformCollisions2D.push(platformCollisions.slice(i, i + 36));
+}
+
+//Esto crea los bloques de nuestras plataformas
+const platformCollisionBlocks = [];
+platformCollisions2D.forEach((row, y) => {
+	row.forEach((symbol, x) => {
+		if (symbol === 202) {
+			platformCollisionBlocks.push(
+				new CollisionBlock({
+					position:{
+						x: x * 16,
+						y: y * 16,
+					},
+			}))
+		}
+	})
+})
+
 //Este va a ser el valor para la gravedad
 const gravity = 0.5;
-
-
-//Esta clase es para el background
-class Background{
-	constructor({position, imageSrc}){
-		this.position = position;
-		this.image = new Image();
-		this.image.src = imageSrc;
-	}
-
-	draw(){
-		if (!this.image) return;
-		c.drawImage(this.image, this.position.y, this.position.x); 
-	}
-
-	update(){
-		this.draw();
-	}
-}
-
-//Esta clase es para el jugador, aquí está la posición velocidad etc.
-//NOTA: Si no puedo pasar las propiedades del constructor como un objetos, es porque
-//No las he definido como un argumento
-class Sprite{
-	constructor({ position, velocity, color = 'red', offset }){
-		this.position = position;
-		//Aquí se modifica la velocidad
-		this.velocity = velocity;
-		//Aquí el ancho de las cajas rojas de los personajes
-		this.width = 50;
-		//Aquí se modifica la altura del cuadro rojo del personaje
-		this.height = 150;
-		//Este es para los controles
-		this.lastKey;
-		//Este es para el cuadro de ataque
-		this.attackBox = {
-			position: {
-				x: this.position.x,
-				y: this.position.y
-			},
-			offset,
-			width: 100,
-			height: 50
-		}
-		this.color = color;
-		this.isAttacking;
-		this.health = 100;
-
-	}
-
-	//Aquí se dibuja el cuadro rojo, se establece sus coordenadas y dimensiones
-	draw(){
-		c.fillStyle = this.color;
-		c.fillRect(this.position.x, this.position.y, this.width, this.height);
-
-		//Caja de ataque
-		if (this.isAttacking) {
-			c.fillStyle = "green";
-			c.fillRect(
-				this.attackBox.position.x, 
-				this.attackBox.position.y, 
-				this.attackBox.width, 
-				this.attackBox.height
-				);	
-		}
-	}
-
-	//Aquí se actualiza todos los valores de draw position y velocity
-	update(){
-		this.draw();
-		this.attackBox.position.x = this.position.x + this.attackBox.offset.x;
-		this.attackBox.position.y = this.position.y;
-
-		this.position.x += this.velocity.x;
-		this.position.y += this.velocity.y;
-
-		if (this.position.y + this.height + this.velocity.y < canvas.height) {
-			this.velocity.y += gravity;
-		}else {
-			this.velocity.y = 0;
-		}
-	}
-
-	//Esto lo que hace es que los ataques se restablezcan a su valor original
-	//Para que sea como un golpe que se está dando
-	attack(){
-		this.isAttacking = true;
-		setTimeout(() => {
-			this.isAttacking = false;
-		}, 100)
-	}
-}
-
 
 //Aquí puedo alterar la posición del jugador en el eje x y 
 const player = new Sprite({
@@ -225,8 +178,18 @@ function animate(){
 	//Con este hacemos la transición de la vista del background
 	c.translate(0, -background.image.height + scaledCanvas.height);
 	background.update();
+	//Con esto pintamos los colliders para visualizar
+	collisionBlocks.forEach((collisionBlock) => {
+		collisionBlock.update();
+	})
+	//Con esto pintamos los colliders para visualizar las plataformas
+	platformCollisionBlocks.forEach((platformCollisionBlock) => {
+		platformCollisionBlock.update();
+	})
 	//Con este restaura los valores para mostrarnoslo constantemente en pantalla
 	c.restore();
+
+
 	player.update();
 	enemy.update();
 
