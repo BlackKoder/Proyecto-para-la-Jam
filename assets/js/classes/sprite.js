@@ -2,14 +2,18 @@
 //NOTA: Si no puedo pasar las propiedades del constructor como un objetos, es porque
 //No las he definido como un argumento
 class Sprite{
-	constructor({ position, velocity, color = 'red', offset }){
+	constructor({ position, velocity, color = 'red', offset, collisionBlocks }){
 		this.position = position;
 		//Aquí se modifica la velocidad
 		this.velocity = velocity;
 		//Aquí el ancho de las cajas rojas de los personajes
-		this.width = 50;
+		//NOTA:Se divide el valor entre cuatro ya que como hemos metido player
+		//dentro del save y restore este también toma los valores del background, por lo tanto
+		//se escala, y entonces tenemos que permanecer con los cálculos exactos de nuestro 
+		//scaledCanvas
+		this.width = 50 / 4;
 		//Aquí se modifica la altura del cuadro rojo del personaje
-		this.height = 150;
+		this.height = 150 / 4;
 		//Este es para los controles
 		this.lastKey;
 		//Este es para el cuadro de ataque
@@ -25,6 +29,7 @@ class Sprite{
 		this.color = color;
 		this.isAttacking;
 		this.health = 100;
+		this.collisionBlocks = collisionBlocks;
 
 	}
 
@@ -52,12 +57,67 @@ class Sprite{
 		this.attackBox.position.y = this.position.y;
 
 		this.position.x += this.velocity.x;
-		this.position.y += this.velocity.y;
+		this.checkForHorizontalCollisions();
+		this.applyGravity();
+		this.checkForVerticalCollisions();
 
-		if (this.position.y + this.height + this.velocity.y < canvas.height) {
-			this.velocity.y += gravity;
+		/*if (this.position.y + this.height + this.velocity.y < canvas.height) {
 		}else {
 			this.velocity.y = 0;
+		}*/
+	}
+
+	//Aquí manejamos la gravedad de una forma un poco más cómoda y organizada
+	applyGravity(){
+		this.position.y += this.velocity.y;
+		this.velocity.y += gravity;
+	}
+
+	//Aquí se detectan los coliders de forma vertical
+	checkForVerticalCollisions(){
+		for(let i = 0; i < this.collisionBlocks.length; i++){
+			const collisionBlock = this.collisionBlocks[i];
+
+			if (collision({
+				object1: this,
+				object2: collisionBlock,
+			})) {
+				if (this.velocity.y > 0) {
+					this.velocity.y = 0;
+					this.position.y = collisionBlock.position.y - this.height - 0.01;
+					break;
+				}
+
+				if (this.velocity.y < 0) {
+					this.velocity.y = 0;
+					this.position.y = collisionBlock.position.y + collisionBlock.height + 0.01;
+					break;
+				}
+			}
+		}
+	}
+
+	//Y aquí en horizontal
+	checkForHorizontalCollisions(){
+		for(let i = 0; i < this.collisionBlocks.length; i++){
+			const collisionBlock = this.collisionBlocks[i];
+
+			if (collision({
+				object1: this,
+				object2: collisionBlock,
+			})) {
+				if (this.velocity.x > 0) {
+					this.velocity.x = 0;
+					this.position.x = collisionBlock.position.x - this.width - 0.01;
+					break;
+				}
+
+				if (this.velocity.x < 0) {
+					this.velocity.x = 0;
+					this.position.x = collisionBlock.position.x + collisionBlock.width + 0.01;
+					break;
+				}
+			}
 		}
 	}
 
