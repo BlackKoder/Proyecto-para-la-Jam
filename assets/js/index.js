@@ -65,7 +65,7 @@ const gravity = 0.5;
 //Aquí puedo alterar la posición del jugador en el eje x y 
 const player = new Sprite({
 			position:{
-				x: 0,
+				x: 150,
 				y: 0
 			},
 			velocity:{
@@ -75,7 +75,8 @@ const player = new Sprite({
 			offset:{
 				x: 0,
 				y: 0
-			}
+			},
+			collisionBlocks
 			
 		});
 
@@ -83,7 +84,7 @@ const player = new Sprite({
 const enemy = new Sprite({
 			position:{
 				x: 300,
-				y: 100
+				y: 0
 			},
 			velocity:{
 				x: 0,
@@ -93,7 +94,8 @@ const enemy = new Sprite({
 				x: -50,
 				y: 0
 			},
-			color: 'blue'
+			color: 'blue',
+			collisionBlocks
 		});
 
 //Este es el valor por defecto de nuestras teclas de dirección
@@ -186,10 +188,8 @@ function animate(){
 	platformCollisionBlocks.forEach((platformCollisionBlock) => {
 		platformCollisionBlock.update();
 	})
-	//Con este restaura los valores para mostrarnoslo constantemente en pantalla
-	c.restore();
-
-
+	//Encerramos los parametros de player y enemy dentro de save y restore para que 
+	//se acople a las proporciones de los colliders y nuestro tilemap
 	player.update();
 	enemy.update();
 
@@ -211,6 +211,10 @@ function animate(){
 	}else if(keys.ArrowLeft.pressed && enemy.lastKey === 'ArrowLeft'){
 		enemy.velocity.x = -5;
 	}
+	//Con este restaura los valores para mostrarnoslo constantemente en pantalla
+	c.restore();
+
+
 
 	//Detección de colisiones
 	if (
@@ -262,7 +266,7 @@ window.addEventListener('keydown', (event) =>{
 		break; 
 
 		case 'w':
-			player.velocity.y = -20;
+			player.velocity.y = -8;
 		break; 
 
 		case 'k':
@@ -280,7 +284,7 @@ window.addEventListener('keydown', (event) =>{
 		break; 
 
 		case 'ArrowUp':
-			enemy.velocity.y = -20;
+			enemy.velocity.y = -8;
 		break; 
 
 		case 'p':
