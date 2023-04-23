@@ -76,7 +76,9 @@ const player = new Sprite({
 				x: 0,
 				y: 0
 			},
-			collisionBlocks
+			collisionBlocks,
+			imageSrc: './assets/img/warrior/Idle.png',
+			frameRate: 8,
 			
 		});
 
@@ -91,11 +93,13 @@ const enemy = new Sprite({
 				y: 1
 			},
 			offset:{
-				x: -50,
+				x: -12,
 				y: 0
 			},
 			color: 'blue',
-			collisionBlocks
+			collisionBlocks,
+			imageSrc: './assets/img/warrior/Idle.png',
+			frameRate: 8,
 		});
 
 //Este es el valor por defecto de nuestras teclas de dirección
@@ -211,11 +215,6 @@ function animate(){
 	}else if(keys.ArrowLeft.pressed && enemy.lastKey === 'ArrowLeft'){
 		enemy.velocity.x = -5;
 	}
-	//Con este restaura los valores para mostrarnoslo constantemente en pantalla
-	c.restore();
-
-
-
 	//Detección de colisiones
 	if (
 		rectangularCollision({
@@ -240,6 +239,11 @@ function animate(){
 		player.health -= 20;
 		document.querySelector('#playerHealth').style.width = player.health + "%";
 	}
+	//Con este restaura los valores para mostrarnoslo constantemente en pantalla
+	c.restore();
+
+
+
 
 	//Terminar el juego basado en la vida
 	if (player.health <= 0 || enemy.health <= 0) {
