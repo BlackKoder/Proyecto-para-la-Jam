@@ -1,8 +1,10 @@
 //Esta clase es para el jugador, aquí está la posición velocidad etc.
 //NOTA: Si no puedo pasar las propiedades del constructor como un objetos, es porque
 //No las he definido como un argumento
-class Sprite{
-	constructor({ position, velocity, color = 'red', offset, collisionBlocks }){
+class Sprite extends Background{
+	constructor({ position, velocity, color = 'red', offset, collisionBlocks, imageSrc,
+		frameRate, scale = 0.5 }){
+		super({imageSrc, frameRate, scale})
 		this.position = position;
 		//Aquí se modifica la velocidad
 		this.velocity = velocity;
@@ -11,9 +13,12 @@ class Sprite{
 		//dentro del save y restore este también toma los valores del background, por lo tanto
 		//se escala, y entonces tenemos que permanecer con los cálculos exactos de nuestro 
 		//scaledCanvas
-		this.width = 50 / 4;
+		//this.width = 50 / 4;
 		//Aquí se modifica la altura del cuadro rojo del personaje
-		this.height = 150 / 4;
+		//Nota se esconden los valores de width y height en este caso porque 
+		//Es necesario para poder arreglar que el sprite no traspase el collider
+		//Para eso se utilizó el método onload en la clase background
+		//this.height = 150 / 4;
 		//Este es para los controles
 		this.lastKey;
 		//Este es para el cuadro de ataque
@@ -23,8 +28,8 @@ class Sprite{
 				y: this.position.y
 			},
 			offset,
-			width: 100,
-			height: 50
+			width: 100 / 4,
+			height: 50 / 4
 		}
 		this.color = color;
 		this.isAttacking;
@@ -34,24 +39,21 @@ class Sprite{
 	}
 
 	//Aquí se dibuja el cuadro rojo, se establece sus coordenadas y dimensiones
-	draw(){
-		c.fillStyle = this.color;
-		c.fillRect(this.position.x, this.position.y, this.width, this.height);
+	//draw(){
+		//c.fillStyle = this.color;
+		//c.fillRect(this.position.x, this.position.y, this.width, this.height);
 
-		//Caja de ataque
-		if (this.isAttacking) {
-			c.fillStyle = "green";
-			c.fillRect(
-				this.attackBox.position.x, 
-				this.attackBox.position.y, 
-				this.attackBox.width, 
-				this.attackBox.height
-				);	
-		}
-	}
+		//Nota, la attack box ha sido movida a la clase Background por el extends del sprite
+	//}
 
 	//Aquí se actualiza todos los valores de draw position y velocity
 	update(){
+		//Hacemos el llamado de updateFrames desde la clase Background
+		this.updateFrames();
+		//Esto es para hacer el cropbox que nos dice cuánto espacio abarca nuestro jugador
+		c.fillStyle = 'rgba(0, 255, 0, 0.2)';
+		c.fillRect(this.position.x, this.position.y, this.width, this.height);
+
 		this.draw();
 		this.attackBox.position.x = this.position.x + this.attackBox.offset.x;
 		this.attackBox.position.y = this.position.y;
