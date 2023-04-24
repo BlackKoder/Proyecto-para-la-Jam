@@ -54,19 +54,21 @@ platformCollisions2D.forEach((row, y) => {
 						x: x * 16,
 						y: y * 16,
 					},
+					height: 4,
 			}))
 		}
 	})
 })
 
 //Este va a ser el valor para la gravedad
-const gravity = 0.5;
+//La gravedad hay qu cambiarla dependiendo de 
+const gravity = 0.4;
 
 //Aquí puedo alterar la posición del jugador en el eje x y 
 const player = new Sprite({
 			position:{
 				x: 150,
-				y: 0
+				y: 300
 			},
 			velocity:{
 				x: 0,
@@ -77,8 +79,56 @@ const player = new Sprite({
 				y: 0
 			},
 			collisionBlocks,
+			platformCollisionBlocks,
 			imageSrc: './assets/img/warrior/Idle.png',
 			frameRate: 8,
+			animations: {
+				Idle: {
+					imageSrc: './assets/img/warrior/Idle.png',
+					frameRate: 8,
+					frameBuffer: 3,	
+				},
+				Run: {
+					imageSrc: './assets/img/warrior/Run.png',
+					frameRate: 8,	
+					frameBuffer: 5,
+				},
+				Jump: {
+					imageSrc: './assets/img/warrior/Jump.png',
+					frameRate: 2,	
+					frameBuffer: 3,
+				},
+				Fall: {
+					imageSrc: './assets/img/warrior/Fall.png',
+					frameRate: 2,	
+					frameBuffer: 3,
+				},
+				takeHit: {
+					imageSrc: './assets/img/warrior/TakeHit.png',
+					frameRate: 4,	
+					frameBuffer: 1,
+				},
+				FallLeft: {
+					imageSrc: './assets/img/warrior/FallLeft.png',
+					frameRate: 2,	
+					frameBuffer: 3,
+				},
+				RunLeft: {
+					imageSrc: './assets/img/warrior/RunLeft.png',
+					frameRate: 8,	
+					frameBuffer: 5,
+				},
+				JumpLeft: {
+					imageSrc: './assets/img/warrior/JumpLeft.png',
+					frameRate: 2,	
+					frameBuffer: 3,
+				},
+				IdleLeft: {
+					imageSrc: './assets/img/warrior/IdleLeft.png',
+					frameRate: 8,	
+					frameBuffer: 3,
+				},
+			}
 			
 		});
 
@@ -98,6 +148,7 @@ const enemy = new Sprite({
 			},
 			color: 'blue',
 			collisionBlocks,
+			platformCollisionBlocks,
 			imageSrc: './assets/img/warrior/Idle.png',
 			frameRate: 8,
 		});
@@ -131,12 +182,12 @@ const background = new Background({
 //Con esto detectamos las colisiones al dar un golpe
 function rectangularCollision({ rectangle1, rectangle2}){
 	return(rectangle1.attackBox.position.x  + rectangle1.attackBox.width >=
-				rectangle2.position.x && 
+				rectangle2.hitbox.position.x && 
 			rectangle1.attackBox.position.x <= 
-				rectangle2.position.x + rectangle2.width && 
+				rectangle2.hitbox.position.x + rectangle2.hitbox.width && 
 			rectangle1.attackBox.position.y + rectangle1.attackBox.height >=
-				rectangle2.position.y && 
-			rectangle1.attackBox.position.y <= rectangle2.position.y + rectangle2.height
+				rectangle2.hitbox.position.y && 
+			rectangle1.attackBox.position.y <= rectangle2.hitbox.position.y + rectangle2.hitbox.height
 		)
 }
 
@@ -170,6 +221,15 @@ function decreaseTimer(){
 
 decreaseTimer();
 
+const backgroundImageHeight = 432;
+
+const camera = {
+	position: {
+		x: 0,
+		y: -backgroundImageHeight + scaledCanvas.height,
+	},
+}
+
 //Esta función lo que hace es dibujar en nuestro liezo varios cuadros por segundo
 //Se mantiene activo todo el tiempo
 function animate(){
@@ -182,16 +242,17 @@ function animate(){
 	//Con este manejamos el escalado del background
 	c.scale(4, 4);
 	//Con este hacemos la transición de la vista del background
-	c.translate(0, -background.image.height + scaledCanvas.height);
+	c.translate(camera.position.x, camera.position.y);
 	background.update();
 	//Con esto pintamos los colliders para visualizar
-	collisionBlocks.forEach((collisionBlock) => {
+	/*collisionBlocks.forEach((collisionBlock) => {
 		collisionBlock.update();
 	})
 	//Con esto pintamos los colliders para visualizar las plataformas
 	platformCollisionBlocks.forEach((platformCollisionBlock) => {
 		platformCollisionBlock.update();
-	})
+	})*/
+	player.checkForHorizontalCanvasCollisions();
 	//Encerramos los parametros de player y enemy dentro de save y restore para que 
 	//se acople a las proporciones de los colliders y nuestro tilemap
 	player.update();
@@ -201,11 +262,40 @@ function animate(){
 	//Aquí altero la velocidad del personaje y el desplazamiento del jugador
 	player.velocity.x = 0;
 	enemy.velocity.x = 0;
-
+	//Aquí hago que se muestren los sprite dependiendo de las teclas que he presionado,
+	//Y de la dirección que esté nuestro personaje
 	if (keys.d.pressed && player.lastKey === 'd') {
-		player.velocity.x = 5;
+		player.switchSprite('Run');
+		player.velocity.x = 3;
+		player.LastDirection = 'right';
+		player.shouldPanCameraToTheLeft({canvas, camera});
 	}else if(keys.a.pressed && player.lastKey === 'a'){
-		player.velocity.x = -5;
+		player.switchSprite('RunLeft');
+		player.velocity.x = -3;
+		player.LastDirection = 'left';
+		player.shouldPanCameraToTheRight({canvas, camera});
+	}else if(player.velocity.y === 0){
+		if (player.LastDirection === 'right') {
+			player.switchSprite('Idle');
+		}else{
+			player.switchSprite('IdleLeft');
+		}
+	}
+	//Igualmente para la animación de salto y caída
+	if (player.velocity.y < 0) {
+		player.shouldPanCameraDown({canvas, camera});
+		if (player.LastDirection === 'right') {
+			player.switchSprite('Jump');
+		}else{
+			player.switchSprite('JumpLeft');
+		}
+	}else if (player.velocity.y > 0){
+		player.shouldPanCameraUp({canvas, camera});
+		if (player.LastDirection === 'right') {
+			player.switchSprite('Fall');
+		}else{
+			player.switchSprite('FallLeft');
+		}
 	}
 
 	//Aquí altero la velocidad del personaje y el desplazamiento del enemigo
@@ -235,6 +325,7 @@ function animate(){
 		}) && 
 		enemy.isAttacking
 		) {
+		player.switchSprite('takeHit');
 		enemy.isAttacking = false;
 		player.health -= 20;
 		document.querySelector('#playerHealth').style.width = player.health + "%";
@@ -270,7 +361,7 @@ window.addEventListener('keydown', (event) =>{
 		break; 
 
 		case 'w':
-			player.velocity.y = -8;
+			player.velocity.y = -7;
 		break; 
 
 		case 'k':
